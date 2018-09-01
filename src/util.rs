@@ -418,6 +418,9 @@ pub fn print_offsets<E>(input: &[u8], from: usize, offsets: &[(ErrorKind<E>, usi
   String::from_utf8_lossy(&v[..]).into_owned()
 }
 
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub enum Void { }
+
 /// indicates which parser returned an error
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(Debug,PartialEq,Eq,Hash,Clone)]
@@ -491,6 +494,79 @@ pub enum ErrorKind<E = u32> {
   TakeUntilAndConsume1,
   TakeWhileMN,
   ParseTo,
+}
+
+pub auto trait NotEq { }
+impl<X> !NotEq for (X, X) { }
+
+impl<E> From<ErrorKind<Void>> for ErrorKind<E>
+where (Void, E): NotEq {
+    fn from(e: ErrorKind<Void>) -> Self {
+        match e {
+            ErrorKind::Custom(_) => unreachable!(),
+            ErrorKind::Tag                       => ErrorKind::Tag,
+            ErrorKind::MapRes                    => ErrorKind::MapRes,
+            ErrorKind::MapOpt                    => ErrorKind::MapOpt,
+            ErrorKind::Alt                       => ErrorKind::Alt,
+            ErrorKind::IsNot                     => ErrorKind::IsNot,
+            ErrorKind::IsA                       => ErrorKind::IsA,
+            ErrorKind::SeparatedList             => ErrorKind::SeparatedList,
+            ErrorKind::SeparatedNonEmptyList     => ErrorKind::SeparatedNonEmptyList,
+            ErrorKind::Many1                     => ErrorKind::Many1,
+            ErrorKind::Count                     => ErrorKind::Count,
+            ErrorKind::TakeUntilAndConsume       => ErrorKind::TakeUntilAndConsume,
+            ErrorKind::TakeUntil                 => ErrorKind::TakeUntil,
+            ErrorKind::TakeUntilEitherAndConsume => ErrorKind::TakeUntilEitherAndConsume,
+            ErrorKind::TakeUntilEither           => ErrorKind::TakeUntilEither,
+            ErrorKind::LengthValue               => ErrorKind::LengthValue,
+            ErrorKind::TagClosure                => ErrorKind::TagClosure,
+            ErrorKind::Alpha                     => ErrorKind::Alpha,
+            ErrorKind::Digit                     => ErrorKind::Digit,
+            ErrorKind::AlphaNumeric              => ErrorKind::AlphaNumeric,
+            ErrorKind::Space                     => ErrorKind::Space,
+            ErrorKind::MultiSpace                => ErrorKind::MultiSpace,
+            ErrorKind::LengthValueFn             => ErrorKind::LengthValueFn,
+            ErrorKind::Eof                       => ErrorKind::Eof,
+            ErrorKind::ExprOpt                   => ErrorKind::ExprOpt,
+            ErrorKind::ExprRes                   => ErrorKind::ExprRes,
+            ErrorKind::CondReduce                => ErrorKind::CondReduce,
+            ErrorKind::Switch                    => ErrorKind::Switch,
+            ErrorKind::TagBits                   => ErrorKind::TagBits,
+            ErrorKind::OneOf                     => ErrorKind::OneOf,
+            ErrorKind::NoneOf                    => ErrorKind::NoneOf,
+            ErrorKind::Char                      => ErrorKind::Char,
+            ErrorKind::CrLf                      => ErrorKind::CrLf,
+            ErrorKind::RegexpMatch               => ErrorKind::RegexpMatch,
+            ErrorKind::RegexpMatches             => ErrorKind::RegexpMatches,
+            ErrorKind::RegexpFind                => ErrorKind::RegexpFind,
+            ErrorKind::RegexpCapture             => ErrorKind::RegexpCapture,
+            ErrorKind::RegexpCaptures            => ErrorKind::RegexpCaptures,
+            ErrorKind::TakeWhile1                => ErrorKind::TakeWhile1,
+            ErrorKind::Complete                  => ErrorKind::Complete,
+            ErrorKind::Fix                       => ErrorKind::Fix,
+            ErrorKind::Escaped                   => ErrorKind::Escaped,
+            ErrorKind::EscapedTransform          => ErrorKind::EscapedTransform,
+            ErrorKind::TagStr                    => ErrorKind::TagStr,
+            ErrorKind::IsNotStr                  => ErrorKind::IsNotStr,
+            ErrorKind::IsAStr                    => ErrorKind::IsAStr,
+            ErrorKind::TakeWhile1Str             => ErrorKind::TakeWhile1Str,
+            ErrorKind::NonEmpty                  => ErrorKind::NonEmpty,
+            ErrorKind::ManyMN                    => ErrorKind::ManyMN,
+            ErrorKind::TakeUntilAndConsumeStr    => ErrorKind::TakeUntilAndConsumeStr,
+            ErrorKind::HexDigit                  => ErrorKind::HexDigit,
+            ErrorKind::TakeUntilStr              => ErrorKind::TakeUntilStr,
+            ErrorKind::OctDigit                  => ErrorKind::OctDigit,
+            ErrorKind::Many0                     => ErrorKind::Many0,
+            ErrorKind::Not                       => ErrorKind::Not,
+            ErrorKind::Permutation               => ErrorKind::Permutation,
+            ErrorKind::ManyTill                  => ErrorKind::ManyTill,
+            ErrorKind::Verify                    => ErrorKind::Verify,
+            ErrorKind::TakeTill1                 => ErrorKind::TakeTill1,
+            ErrorKind::TakeUntilAndConsume1      => ErrorKind::TakeUntilAndConsume1,
+            ErrorKind::TakeWhileMN               => ErrorKind::TakeWhileMN,
+            ErrorKind::ParseTo                   => ErrorKind::ParseTo,
+        }
+    }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -644,7 +720,8 @@ pub trait Convert<T> {
   fn convert(T) -> Self;
 }
 
-impl<F, E: From<F>> Convert<ErrorKind<F>> for ErrorKind<E> {
+impl<F, E: From<F>> Convert<ErrorKind<F>> for ErrorKind<E>
+{
   #[cfg_attr(rustfmt, rustfmt_skip)]
   #[allow(deprecated)]
   fn convert(e: ErrorKind<F>) -> Self {
@@ -690,8 +767,8 @@ impl<F, E: From<F>> Convert<ErrorKind<F>> for ErrorKind<E> {
       ErrorKind::TakeWhile1                => ErrorKind::TakeWhile1,
       ErrorKind::Complete                  => ErrorKind::Complete,
       ErrorKind::Fix                       => ErrorKind::Fix,
-      ErrorKind::Escaped                   => ErrorKind::Escaped,
       ErrorKind::EscapedTransform          => ErrorKind::EscapedTransform,
+      ErrorKind::Escaped                   => ErrorKind::Escaped,
       ErrorKind::TagStr                    => ErrorKind::TagStr,
       ErrorKind::IsNotStr                  => ErrorKind::IsNotStr,
       ErrorKind::IsAStr                    => ErrorKind::IsAStr,

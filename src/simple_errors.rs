@@ -13,7 +13,7 @@
 //! you can know precisely which parser got to which part of the input.
 //! The main drawback is that it is a lot slower than default error
 //! management.
-use util::{Convert, ErrorKind};
+use util::{Convert, ErrorKind, NotEq};
 use lib::std::convert::From;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -27,6 +27,16 @@ impl<I, F, E: From<F>> Convert<Context<I, F>> for Context<I, E> {
 
     Context::Code(i, ErrorKind::convert(e))
   }
+}
+
+impl<I, F, E> From<Context<I, F>> for Context<I, E>
+    where (F, E): NotEq, ErrorKind<E>: From<ErrorKind<F>>
+{
+    
+    fn from(c: Context<I, F>) -> Self {
+        let Context::Code(i, e) = c;
+        Context::Code(i, From::from(e))
+    }
 }
 
 impl<I, E> Context<I, E> {

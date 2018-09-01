@@ -21,10 +21,10 @@ macro_rules! tag (
   ($i:expr, $tag: expr) => (
     {
       use $crate::lib::std::result::Result::*;
-      use $crate::{Err,Needed,IResult,ErrorKind};
+      use $crate::{Err,Needed,IResult,ErrorKind,Void};
       use $crate::{Compare,CompareResult,InputLength,need_more,InputTake};
-
-      let res: IResult<_,_> = match ($i).compare($tag) {
+        
+      let res: IResult<_,_,_> = match ($i).compare($tag) {
         CompareResult::Ok => {
           let blen = $tag.input_len();
           Ok($i.take_split(blen))
@@ -33,7 +33,7 @@ macro_rules! tag (
           need_more($i, Needed::Size($tag.input_len()))
         },
         CompareResult::Error => {
-          let e:ErrorKind<u32> = ErrorKind::Tag;
+          let e:ErrorKind<Void> = ErrorKind::Tag;
           Err(Err::Error($crate::Context::Code($i, e)))
         }
       };

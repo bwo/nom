@@ -472,20 +472,20 @@ macro_rules! add_return_error (
   ($i:expr, $code:expr, $submac:ident!( $($args:tt)* )) => (
     {
       use $crate::lib::std::result::Result::*;
-      use $crate::{Err,Context,ErrorKind};
+        use $crate::{Err,Context,ErrorKind};
+        use std::convert::From;
+        use $crate::Convert;
 
       fn unify_types<I,E>(_: &Context<I,E>, _: &Context<I,E>) {}
       match $submac!($i, $($args)*) {
         Ok((i, o))    => Ok((i, o)),
         Err(Err::Error(e))      => {
-          unify_types(&e, &Context::Code($i, $code));
-          Err(Err::Error(error_node_position!($i, $code, e)))
+          Err(Err::Error(error_node_position!($i, $code, From::from(e))))
         },
         Err(Err::Failure(e))      => {
-          unify_types(&e, &Context::Code($i, $code));
-          Err(Err::Failure(error_node_position!($i, $code, e)))
+          Err(Err::Failure(error_node_position!($i, $code, From::from(e))))
         },
-        Err(e) => Err(e),
+        Err(Err::Incomplete(needed)) => Err(Err::Incomplete(needed))
       }
     }
   );
